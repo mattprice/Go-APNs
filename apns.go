@@ -5,11 +5,18 @@ import (
 )
 
 type Notification struct {
-	Alert string
-	Badge int
+	Alert string `json:"alert,omitempty"`
+	Badge int    `json:"badge,omitempty"`
+	Sound string `json:"sound,omitempty"`
+}
+
+type aps struct {
+	*Notification `json:"aps,omitempty"`
 }
 
 func (this *Notification) ToString() (string, error) {
-	bytes, err := json.MarshalIndent(this, "", "  ")
+	alert := &aps{this}
+	bytes, err := json.MarshalIndent(alert, "", "  ")
+
 	return string(bytes), err
 }
