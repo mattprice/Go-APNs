@@ -18,8 +18,10 @@ func main() {
 
 func notification() {
 	payload := &apns.Notification{
-		Alert: "Hello, World! This is a test.",
-		Badge: 42,
+		Alert:       "Hello, World! This is a test.",
+		Badge:       42,
+		Sound:       "Test.aif",
+		LaunchImage: "Default.png",
 	}
 
 	str, _ := payload.ToString()
