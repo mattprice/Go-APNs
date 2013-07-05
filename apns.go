@@ -15,25 +15,45 @@ type Notification struct {
 func (this *Notification) ToString() (string, error) {
 	// I don't like going from Struct to Map to JSON, but this is the best solution
 	// I can come up with right now to continue keeping the API simple and elegant.
-	alert := map[string]interface{}{}
+	payload := make(map[string]interface{})
+	aps := make(map[string]interface{})
 
-	if this.Alert != "" {
-		alert["alert"] = this.Alert
+	// If ActionLocKey or LaunchImage are set then we need to use the alert dictionary format.
+	if this.ActionLocKey != "" || this.LaunchImage != "" {
+		alert := make(map[string]interface{})
+
+		if this.Alert != "" {
+			alert["body"] = this.Alert
+		}
+
+		if this.ActionLocKey != "" {
+			alert["action-loc-key"] = this.ActionLocKey
+		}
+
+		if this.LaunchImage != "" {
+			alert["launch-image"] = this.LaunchImage
+		}
+
+		aps["alert"] = &alert
+	} else if this.Alert != "" {
+		aps["alert"] = this.Alert
 	}
 
 	// The omitempty option of `json.Marshal` considers "0" to be an empty value.
 	// Although it's not documented, you can send Apple "-1" instead of "0" in order
 	// to clear the badge icon, which saves us from needing to write our own omitempty function.
-	alert["badge"] = this.Badge
+	aps["badge"] = this.Badge
 	if this.Badge == 0 {
-		alert["badge"] = -1
+		aps["badge"] = -1
 	}
 
 	if this.Sound != "" {
-		alert["sound"] = this.Sound
+		aps["sound"] = this.Sound
 	}
 
-	bytes, err := json.MarshalIndent(alert, "", "  ")
+	// All standard dictionaries need to be wrapped in the "aps" namespace.
+	payload["aps"] = &aps
 
+	bytes, err := json.MarshalIndent(payload, "", "  ")
 	return string(bytes), err
 }
