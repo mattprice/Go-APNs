@@ -25,19 +25,17 @@ func notification() {
 		LaunchImage: "Default.png",
 	}
 
-	// Add a custom string to the payload.
-	payload.SetCustom("google", "http://www.google.com/")
-
-	// Add a multi-level dictionary to the payload.
-	multipleLinks := map[string]string{
-		"ddg":  "http://duckduckgo.com/",
-		"bing": "http://bing.com/",
+	// Add a multilevel map to the payload.
+	// You can also send an array, if that's your thing.
+	searchEngines := map[string]string{
+		"ddg":    "http://duckduckgo.com/",
+		"bing":   "http://bing.com/",
+		"google": "http://google.com/",
 	}
-	payload.SetCustom("links", multipleLinks)
+	payload.SetCustom("searchEngines", searchEngines)
 
-	// Add an array to the payload.
-	arrayOfNames := []string{"John", "Sue"}
-	payload.SetCustom("names", arrayOfNames)
+	// Add a custom string to the payload.
+	payload.SetCustom("defaultEngine", "ddg")
 
 	// Output the payload as JSON, for testing.
 	str, _ := payload.ToString()
