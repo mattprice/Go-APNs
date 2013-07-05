@@ -13,7 +13,7 @@ type Notification struct {
 	Custom       map[string]interface{}
 }
 
-func (this *Notification) SetCustom(key, value string) {
+func (this *Notification) SetCustom(key string, value interface{}) {
 	if this.Custom == nil {
 		this.Custom = make(map[string]interface{})
 	}

@@ -17,6 +17,7 @@ func main() {
 }
 
 func notification() {
+	// Create a simple notification:
 	payload := &apns.Notification{
 		Alert:       "Hello, World! This is a test.",
 		Badge:       42,
@@ -24,9 +25,21 @@ func notification() {
 		LaunchImage: "Default.png",
 	}
 
-	// TODO: This really doesn't feel as elegant as I'd like.
-	payload.SetCustom("link", "http://www.google.com/")
+	// Add a custom string to the payload.
+	payload.SetCustom("google", "http://www.google.com/")
 
+	// Add a multi-level dictionary to the payload.
+	multipleLinks := map[string]string{
+		"ddg":  "http://duckduckgo.com/",
+		"bing": "http://bing.com/",
+	}
+	payload.SetCustom("links", multipleLinks)
+
+	// Add an array to the payload.
+	arrayOfNames := []string{"John", "Sue"}
+	payload.SetCustom("names", arrayOfNames)
+
+	// Output the payload as JSON, for testing.
 	str, _ := payload.ToString()
 	fmt.Println(str)
 }
