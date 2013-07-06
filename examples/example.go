@@ -24,6 +24,9 @@ func notification() {
 		LaunchImage: "Default.png",
 	}
 
+	// TODO: This really doesn't feel as elegant as I'd like.
+	payload.SetCustom("link", "http://www.google.com/")
+
 	str, _ := payload.ToString()
 	fmt.Println(str)
 }

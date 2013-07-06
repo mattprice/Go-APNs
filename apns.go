@@ -10,6 +10,15 @@ type Notification struct {
 	Sound        string
 	ActionLocKey string
 	LaunchImage  string
+	Custom       map[string]interface{}
+}
+
+func (this *Notification) SetCustom(key, value string) {
+	if this.Custom == nil {
+		this.Custom = make(map[string]interface{})
+	}
+
+	this.Custom[key] = value
 }
 
 func (this *Notification) ToString() (string, error) {
@@ -53,6 +62,11 @@ func (this *Notification) ToString() (string, error) {
 
 	// All standard dictionaries need to be wrapped in the "aps" namespace.
 	payload["aps"] = &aps
+
+	// Output all the custom dictionaries.
+	for key, value := range this.Custom {
+		payload[key] = value
+	}
 
 	bytes, err := json.MarshalIndent(payload, "", "  ")
 	return string(bytes), err
