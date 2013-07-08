@@ -1,5 +1,5 @@
-# Golang Apple Push Notification Service (APNs)
-The beginnings of a Golang package for easily sending Apple Push Notifications.
+# Golang Apple Push Notification Service
+The beginnings of a Golang package for easily sending Apple Push Notifications. This is currently still a major work in progress.
 
 ## License (MIT)
 Copyright (c) 2013 Matthew Price, http://mattprice.me/
