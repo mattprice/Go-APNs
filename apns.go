@@ -4,21 +4,22 @@ import (
 	"encoding/json"
 )
 
+type Custom map[string]interface{}
+
 type Notification struct {
 	Alert        string
 	Badge        int
 	Sound        string
 	ActionLocKey string
 	LaunchImage  string
-	Custom       map[string]interface{}
+	Custom
 }
 
-func (this *Notification) SetCustom(key string, value interface{}) {
-	if this.Custom == nil {
-		this.Custom = make(map[string]interface{})
+func NewNotification() *Notification {
+	// If someone is using the `NewNotification()` style, we should pre-make the maps for them.
+	return &Notification{
+		Custom: Custom{},
 	}
-
-	this.Custom[key] = value
 }
 
 func (this *Notification) ToString() (string, error) {

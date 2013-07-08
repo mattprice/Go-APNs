@@ -7,35 +7,45 @@ import (
 )
 
 func main() {
-	fmt.Println("Regular Notification:")
-	notification()
+	fmt.Println("Regular Notification, Style A:")
+	notificationStyleA()
 	fmt.Println()
+
+	// fmt.Println("Regular Notification, Style B:")
+	// notificationStyleB()
+	// fmt.Println()
 
 	// fmt.Println("Localized Notification:")
 	// locNotifcation()
 	// fmt.Println()
 }
 
-func notification() {
+func notificationStyleA() {
 	// Create a simple notification:
 	payload := &apns.Notification{
 		Alert:       "Hello, World! This is a test.",
 		Badge:       42,
 		Sound:       "Test.aif",
 		LaunchImage: "Default.png",
+
+		Custom: apns.Custom{
+			"X-HTTP-Referer": "https://github.com/mattprice/Go-APNs/",
+		},
 	}
 
-	// Add a multilevel map to the payload.
-	// You can also send an array, if that's your thing.
-	searchEngines := map[string]string{
-		"ddg":    "http://duckduckgo.com/",
-		"bing":   "http://bing.com/",
-		"google": "http://google.com/",
-	}
-	payload.SetCustom("searchEngines", searchEngines)
+	// Output the payload as JSON, for testing.
+	str, _ := payload.ToString()
+	fmt.Println(str)
+}
 
-	// Add a custom string to the payload.
-	payload.SetCustom("defaultEngine", "ddg")
+func notificationStyleB() {
+	// Create a simple notification:
+	payload := apns.NewNotification()
+	payload.Alert = "Hello, World! This is a test."
+	payload.Badge = 42
+	payload.Sound = "Test.aif"
+	payload.LaunchImage = "Default.png"
+	payload.Custom["X-HTTP-Referer"] = "https://github.com/mattprice/Go-APNs"
 
 	// Output the payload as JSON, for testing.
 	str, _ := payload.ToString()
