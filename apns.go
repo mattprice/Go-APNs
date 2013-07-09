@@ -15,11 +15,24 @@ type Notification struct {
 	Custom
 }
 
+type LocNotification struct {
+	Args []string
+	Notification
+}
+
 func NewNotification() *Notification {
 	// If someone is using the `NewNotification()` style, we should pre-make the maps for them.
 	return &Notification{
 		Custom: Custom{},
 	}
+}
+
+func NewLocNotification() *LocNotification {
+	// If someone is using the `NewLocNotification()` style, we should pre-make the maps for them.
+	this := new(LocNotification)
+	this.Custom = Custom{}
+
+	return this
 }
 
 func (this *Notification) ToString() (string, error) {

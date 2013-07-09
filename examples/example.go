@@ -15,9 +15,9 @@ func main() {
 	// notificationStyleB()
 	// fmt.Println()
 
-	// fmt.Println("Localized Notification:")
-	// locNotifcation()
-	// fmt.Println()
+	fmt.Println("Localized Notification, Style B:")
+	locNotifcationStyleB()
+	fmt.Println()
 }
 
 func notificationStyleA() {
@@ -52,12 +52,17 @@ func notificationStyleB() {
 	fmt.Println(str)
 }
 
-// func locNotifcation() {
-// 	payload := &apns.LocNotification{
-// 		Alert: "Hello, World! This is also a test!",
-// 		Badge: 42,
-// 	}
+func locNotifcationStyleB() {
+	// Create a simple notification:
+	payload := apns.NewLocNotification()
+	payload.Alert = "APP_GREETING"
+	payload.Args = []string{"John", "Smith"}
+	payload.Badge = 42
+	payload.Sound = "Test.aif"
+	payload.LaunchImage = "Default.png"
+	payload.Custom["X-HTTP-Referer"] = "https://github.com/mattprice/Go-APNs"
 
-// 	str, _ := payload.ToString()
-// 	fmt.Println(str)
-// }
+	// Output the payload as JSON, for testing.
+	str, _ := payload.ToString()
+	fmt.Println(str)
+}
