@@ -11,17 +11,17 @@ func main() {
 	notificationStyleA()
 	fmt.Println()
 
-	// fmt.Println("Regular Notification, Style B:")
-	// notificationStyleB()
-	// fmt.Println()
-
-	fmt.Println("Localized Notification, Style A:")
-	locNotifcationStyleB()
+	fmt.Println("Regular Notification, Style B:")
+	notificationStyleB()
 	fmt.Println()
 
-	// fmt.Println("Localized Notification, Style B:")
-	// locNotifcationStyleB()
-	// fmt.Println()
+	fmt.Println("Localized Notification, Style A:")
+	notificationLocStyleA()
+	fmt.Println()
+
+	fmt.Println("Localized Notification, Style B:")
+	notificationLocStyleB()
+	fmt.Println()
 }
 
 func notificationStyleA() {
@@ -56,14 +56,15 @@ func notificationStyleB() {
 	fmt.Println(str)
 }
 
-func locNotifcationStyleA() {
+func notificationLocStyleA() {
 	// Create a simple notification:
-	payload := &apns.LocNotification{
-		Alert:       "APP_GREETING",
-		Args:        []string{"John", "Smith"},
-		Badge:       42,
-		Sound:       "Test.aif",
-		LaunchImage: "Default.png",
+	payload := &apns.Notification{
+		Alert:        "Test! This should be ignored.",
+		AlertLocKey:  "APP_GREETING",
+		AlertLocArgs: []string{"John", "Smith"},
+		Badge:        42,
+		Sound:        "Test.aif",
+		LaunchImage:  "Default.png",
 
 		Custom: apns.Custom{
 			"X-HTTP-Referer": "https://github.com/mattprice/Go-APNs/",
@@ -75,11 +76,12 @@ func locNotifcationStyleA() {
 	fmt.Println(str)
 }
 
-func locNotifcationStyleB() {
+func notificationLocStyleB() {
 	// Create a simple notification:
-	payload := apns.NewLocNotification()
-	payload.Alert = "APP_GREETING"
-	payload.Args = []string{"John", "Smith"}
+	payload := apns.NewNotification()
+	payload.Alert = "Test! This should be ignored."
+	payload.AlertLocKey = "APP_GREETING"
+	payload.AlertLocArgs = []string{"John", "Smith"}
 	payload.Badge = 42
 	payload.Sound = "Test.aif"
 	payload.LaunchImage = "Default.png"
