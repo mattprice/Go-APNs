@@ -30,7 +30,7 @@ func (this *Notification) ToString() (string, error) {
 	payload := make(map[string]interface{})
 	aps := make(map[string]interface{})
 
-	// There's34 cases in which we might need to use the alert dictionary format.
+	// There's 3 cases in which we might need to use the alert dictionary format.
 	//	1) A localized action key is set (ActionLocKey).
 	// 2) A localized alert key is set (AlertLocKey).
 	//	3) A custom launch image is set (LaunchImage).
@@ -38,7 +38,7 @@ func (this *Notification) ToString() (string, error) {
 		alert := make(map[string]interface{})
 
 		// Don't send a body if there is a localized alert key set.
-		// TODO: Maybe this should be logged as a warning instead of silently failing?
+		// TODO: Log this as a warning instead of silently failing.
 		if this.Alert != "" && this.AlertLocKey == "" {
 			alert["body"] = this.Alert
 		}
@@ -66,12 +66,11 @@ func (this *Notification) ToString() (string, error) {
 		aps["alert"] = this.Alert
 	}
 
-	// The omitempty option of `json.Marshal` considers "0" to be an empty value.
-	// Although it's not documented, you can send Apple "-1" instead of "0" in order
-	// to clear the badge icon, which saves us from needing to write our own omitempty function.
-	aps["badge"] = this.Badge
-	if this.Badge == 0 {
-		aps["badge"] = -1
+	// TODO: Need a warning if this.Badge is set to 0.
+	if this.Badge > 0 {
+		aps["badge"] = this.Badge
+	} else if this.Badge == -1 {
+		aps["badge"] = 0
 	}
 
 	if this.Sound != "" {

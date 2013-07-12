@@ -11,24 +11,24 @@ func main() {
 	notificationStyleA()
 	fmt.Println()
 
-	fmt.Println("Regular Notification, Style B:")
-	notificationStyleB()
-	fmt.Println()
+	// fmt.Println("Regular Notification, Style B:")
+	// notificationStyleB()
+	// fmt.Println()
 
-	fmt.Println("Localized Notification, Style A:")
-	notificationLocStyleA()
-	fmt.Println()
+	// fmt.Println("Localized Notification, Style A:")
+	// notificationLocStyleA()
+	// fmt.Println()
 
-	fmt.Println("Localized Notification, Style B:")
-	notificationLocStyleB()
-	fmt.Println()
+	// fmt.Println("Localized Notification, Style B:")
+	// notificationLocStyleB()
+	// fmt.Println()
 }
 
 func notificationStyleA() {
 	// Create a simple notification:
 	payload := &apns.Notification{
 		Alert:       "Hello, World! This is a test.",
-		Badge:       42,
+		Badge:       -1,
 		Sound:       "Test.aif",
 		LaunchImage: "Default.png",
 
