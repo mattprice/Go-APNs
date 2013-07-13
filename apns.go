@@ -11,7 +11,7 @@ type Notification struct {
 	AlertLocKey  string
 	AlertLocArgs []string
 	ActionLocKey string
-	Badge        int
+	Badge        interface{}
 	Sound        string
 	LaunchImage  string
 	Custom
@@ -38,7 +38,7 @@ func (this *Notification) ToString() (string, error) {
 		alert := make(map[string]interface{})
 
 		// Don't send a body if there is a localized alert key set.
-		// TODO: Log this as a warning instead of silently failing.
+		// TODO: Log a warning about the value of `this.Alert` being ignored.
 		if this.Alert != "" && this.AlertLocKey == "" {
 			alert["body"] = this.Alert
 		}
@@ -66,11 +66,15 @@ func (this *Notification) ToString() (string, error) {
 		aps["alert"] = this.Alert
 	}
 
-	// TODO: Need a warning if this.Badge is set to 0.
-	if this.Badge > 0 {
+	// We use an `interface{}` for `this.Badge` because the `int` type is always initalized to 0.
+	// That means we wouldn't be able to tell if someone had explicitly set `this.Badge` to 0
+	// or if they had not set it at all. This switch checks let's us make sure it was
+	// set explicitly, and to an integer, before storing it in the payload.
+	switch this.Badge.(type) {
+	case int:
 		aps["badge"] = this.Badge
-	} else if this.Badge == -1 {
-		aps["badge"] = 0
+	default:
+		// Log something about this.Badge being an invalid value.
 	}
 
 	if this.Sound != "" {
