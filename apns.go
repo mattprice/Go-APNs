@@ -24,7 +24,7 @@ func NewNotification() *Notification {
 	}
 }
 
-func (this *Notification) ToString() (string, error) {
+func (this *Notification) toPayload() *map[string]interface{} {
 	// I don't like going from Struct to Map to JSON, but this is the best solution
 	// I can come up with right now to continue keeping the API simple and elegant.
 	payload := make(map[string]interface{})
@@ -89,6 +89,17 @@ func (this *Notification) ToString() (string, error) {
 		payload[key] = value
 	}
 
+	return &payload
+}
+
+func (this *Notification) ToJSON() (string, error) {
+	payload := this.toPayload()
+	bytes, err := json.Marshal(payload)
+	return string(bytes), err
+}
+
+func (this *Notification) ToString() (string, error) {
+	payload := this.toPayload()
 	bytes, err := json.MarshalIndent(payload, "", "  ")
 	return string(bytes), err
 }

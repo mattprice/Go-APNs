@@ -28,7 +28,7 @@ func notificationStyleA() {
 	// Create a simple notification:
 	payload := &apns.Notification{
 		Alert:       "Hello, World! This is a test.",
-		Badge:       -1,
+		Badge:       42,
 		Sound:       "Test.aif",
 		LaunchImage: "Default.png",
 
