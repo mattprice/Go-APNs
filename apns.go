@@ -92,10 +92,9 @@ func (this *Notification) toPayload() *map[string]interface{} {
 	return &payload
 }
 
-func (this *Notification) ToJSON() (string, error) {
+func (this *Notification) ToJSON() ([]byte, error) {
 	payload := this.toPayload()
-	bytes, err := json.Marshal(payload)
-	return string(bytes), err
+	return json.Marshal(payload)
 }
 
 func (this *Notification) ToString() (string, error) {
