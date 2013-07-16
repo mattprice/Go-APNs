@@ -29,7 +29,7 @@ func notificationStyleA() {
 	payload := &apns.Notification{
 		Alert:       "Hello, World! This is a test.",
 		Badge:       42,
-		Sound:       "Test.aif",
+		Sound:       "Test.aiff",
 		LaunchImage: "Default.png",
 
 		Custom: apns.Custom{
@@ -38,8 +38,12 @@ func notificationStyleA() {
 	}
 
 	// Output the payload as JSON, for testing.
-	str, _ := payload.ToString()
-	fmt.Println(str)
+	str, err := payload.ToString()
+	if err != nil {
+		fmt.Println("Error:", err)
+	} else {
+		fmt.Println(str)
+	}
 }
 
 func notificationStyleB() {
@@ -47,7 +51,7 @@ func notificationStyleB() {
 	payload := apns.NewNotification()
 	payload.Alert = "Hello, World! This is a test."
 	payload.Badge = 42
-	payload.Sound = "Test.aif"
+	payload.Sound = "Test.aiff"
 	payload.LaunchImage = "Default.png"
 	payload.Custom["X-HTTP-Referer"] = "https://github.com/mattprice/Go-APNs"
 
@@ -63,7 +67,7 @@ func notificationLocStyleA() {
 		AlertLocKey:  "APP_GREETING",
 		AlertLocArgs: []string{"John", "Smith"},
 		Badge:        42,
-		Sound:        "Test.aif",
+		Sound:        "Test.aiff",
 		LaunchImage:  "Default.png",
 
 		Custom: apns.Custom{
@@ -83,7 +87,7 @@ func notificationLocStyleB() {
 	payload.AlertLocKey = "APP_GREETING"
 	payload.AlertLocArgs = []string{"John", "Smith"}
 	payload.Badge = 42
-	payload.Sound = "Test.aif"
+	payload.Sound = "Test.aiff"
 	payload.LaunchImage = "Default.png"
 	payload.Custom["X-HTTP-Referer"] = "https://github.com/mattprice/Go-APNs"
 

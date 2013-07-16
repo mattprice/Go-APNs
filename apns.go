@@ -2,6 +2,7 @@ package apns
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
 type Custom map[string]interface{}
@@ -24,7 +25,7 @@ func NewNotification() *Notification {
 	}
 }
 
-func (this *Notification) toPayload() *map[string]interface{} {
+func (this *Notification) toPayload() (*map[string]interface{}, error) {
 	// I don't like going from Struct to Map to JSON, but this is the best solution
 	// I can come up with right now to continue keeping the API simple and elegant.
 	payload := make(map[string]interface{})
@@ -74,7 +75,8 @@ func (this *Notification) toPayload() *map[string]interface{} {
 	case int:
 		aps["badge"] = this.Badge
 	default:
-		// Log something about this.Badge being an invalid value.
+		err := fmt.Errorf("The badge count should be of type `int` but we found a `%T` instead.", this.Badge)
+		return nil, err
 	}
 
 	if this.Sound != "" {
@@ -89,16 +91,28 @@ func (this *Notification) toPayload() *map[string]interface{} {
 		payload[key] = value
 	}
 
-	return &payload
+	return &payload, nil
 }
 
 func (this *Notification) ToJSON() ([]byte, error) {
-	payload := this.toPayload()
-	return json.Marshal(payload)
+	payload, err := this.toPayload()
+
+	// If `toPayload()` resulted in an error, send it instead of trying to generate JSON.
+	if err != nil {
+		return nil, err
+	} else {
+		return json.Marshal(payload)
+	}
 }
 
 func (this *Notification) ToString() (string, error) {
-	payload := this.toPayload()
-	bytes, err := json.MarshalIndent(payload, "", "  ")
-	return string(bytes), err
+	payload, err := this.toPayload()
+
+	// If `toPayload()` resulted in an error, send it instead of trying to generate JSON.
+	if err != nil {
+		return "", err
+	} else {
+		bytes, err := json.MarshalIndent(payload, "", "  ")
+		return string(bytes), err
+	}
 }
