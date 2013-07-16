@@ -72,10 +72,14 @@ func (this *Notification) toPayload() (*map[string]interface{}, error) {
 	// or if they had not set it at all. This switch checks let's us make sure it was
 	// set explicitly, and to an integer, before storing it in the payload.
 	switch this.Badge.(type) {
+	case nil:
+		// If we don't check for the nil case (no badge set), then default will catch it.
+		break
 	case int:
 		aps["badge"] = this.Badge
 	default:
-		err := fmt.Errorf("The badge count should be of type `int` but we found a `%T` instead.", this.Badge)
+		// TODO: Need to check and see if the badge count can be a string, too.
+		err := fmt.Errorf("The badge count should be of type `int`, but we found a `%T` instead.", this.Badge)
 		return nil, err
 	}
 
