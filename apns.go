@@ -100,23 +100,19 @@ func (this *Notification) toPayload() (*map[string]interface{}, error) {
 
 func (this *Notification) ToJSON() ([]byte, error) {
 	payload, err := this.toPayload()
-
-	// If `toPayload()` resulted in an error, send it instead of trying to generate JSON.
 	if err != nil {
 		return nil, err
-	} else {
-		return json.Marshal(payload)
 	}
+
+	return json.Marshal(payload)
 }
 
 func (this *Notification) ToString() (string, error) {
 	payload, err := this.toPayload()
-
-	// If `toPayload()` resulted in an error, send it instead of trying to generate JSON.
 	if err != nil {
 		return "", err
-	} else {
-		bytes, err := json.MarshalIndent(payload, "", "  ")
-		return string(bytes), err
 	}
+
+	bytes, err := json.MarshalIndent(payload, "", "  ")
+	return string(bytes), err
 }
