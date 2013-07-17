@@ -11,4 +11,11 @@ func main() {
 	payload := &apns.Notification{
 		Alert: "Hello, World! This is a test.",
 	}
+
+	bytes, err := payload.ToBytes()
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	fmt.Println("Bytes:", bytes)
 }

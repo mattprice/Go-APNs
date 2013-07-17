@@ -1,8 +1,17 @@
 package apns
 
 import (
+	"bytes"
+	"encoding/binary"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+)
+
+const (
+	// The maximum size allowed for a notification payload is 256 bytes.
+	// Any notification above this limit are refused.
+	MAX_PAYLOAD_SIZE = 265
 )
 
 type Custom map[string]interface{}
@@ -115,4 +124,37 @@ func (this *Notification) ToString() (string, error) {
 
 	bytes, err := json.MarshalIndent(payload, "", "  ")
 	return string(bytes), err
+}
+
+func (this *Notification) ToBytes() ([]byte, error) {
+	// Convert the hex string iOS returns into a device token.
+	// TODO: Move this into a separate `SendTo()` function.
+	token, err := hex.DecodeString("19e5d3a4a27eb08e9b2d22166152a5492fd645868f1e6909e80ba99256c8590f")
+	if err != nil {
+		return nil, err
+	}
+
+	payload, err := this.ToJSON()
+	if err != nil {
+		return nil, err
+	}
+
+	// If the payload is larger than the maximum size allowed by Apple, fail with an error.
+	// TODO: We should truncate the "Alert" key instead of completely bailing out. (Optional?)
+	if len(payload) > MAX_PAYLOAD_SIZE {
+		err := fmt.Errorf("Payload is larger than the %v byte limit.", MAX_PAYLOAD_SIZE)
+		return nil, err
+	}
+
+	// Create a binary message using the new enhanced format.
+	buffer := new(bytes.Buffer)
+	binary.Write(buffer, binary.BigEndian, uint8(1))             // Command
+	binary.Write(buffer, binary.BigEndian, uint32(1))            // Identifier
+	binary.Write(buffer, binary.BigEndian, uint32(0))            // Expiry
+	binary.Write(buffer, binary.BigEndian, uint16(len(token)))   // Device token length
+	binary.Write(buffer, binary.BigEndian, token)                // Token
+	binary.Write(buffer, binary.BigEndian, uint16(len(payload))) // Payload length
+	binary.Write(buffer, binary.BigEndian, payload)              // Payload
+
+	return buffer.Bytes(), nil
 }
