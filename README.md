@@ -1,5 +1,12 @@
-# Golang Apple Push Notification Service
-The beginnings of a Golang package for easily sending Apple Push Notifications. This is currently still a major work in progress.
+# Go APNs [![Build Status](https://travis-ci.org/mattprice/Go-APNs.png)](https://travis-ci.org/mattprice/Go-APNs)
+
+**Work In Progress:** A Golang package for easily connecting and sending notifications to the Apple Push Notification Service. We abstract all the quirks and difficulties of the APNs so that you can focus on your application.
+
+## Features
+* [Based on queues](http://redth.info/the-problem-with-apples-push-notification-ser/ "The Problem with Apple's Push Notification Service") instead of timeouts. Ensure that all your messages get delivered without sacrificing any speed or worrying about socket disconnections.
+* [Certificates](http://developer.apple.com/library/mac/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/ProvisioningDevelopment.html#//apple_ref/doc/uid/TP40008194-CH104-SW6) can be passed as either a file or a string, allowing you to store the certificates in a database or environmental variable.
+* Completely handles the creation of the [JSON payload](http://developer.apple.com/library/mac/#documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/ApplePushService.html). Stop worrying about how and when to use the alert dictionary format required for complex notifications.
+* Allows you to create a persistent connection to Apple's server, [as recommended](http://developer.apple.com/library/ios/#documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/CommunicatingWIthAPS.html). Perfect for applications that need to continuously send notifications throughtout the day, or for applications that only need to send notifications through in small batches.
 
 ## License (MIT)
 Copyright (c) 2013 Matthew Price, http://mattprice.me/
