@@ -12,6 +12,13 @@ const (
 	// The maximum size allowed for a notification payload is 256 bytes.
 	// Any notification above this limit are refused.
 	MAX_PAYLOAD_SIZE = 265
+
+	// The maximum value of the notification identifier we can send.
+	MAX_IDENTIFIER = 9999
+)
+
+var (
+	nextIdentifier uint32 = 0
 )
 
 type Custom map[string]interface{}
@@ -146,10 +153,17 @@ func (this *Notification) ToBytes() ([]byte, error) {
 		return nil, err
 	}
 
+	// If the next identifier is greater than the max identifier, reset it.
+	// TODO: Because of the queuing system, this could cause problems.
+	if nextIdentifier == MAX_IDENTIFIER {
+		nextIdentifier = 0
+	}
+	nextIdentifier++
+
 	// Create a binary message using the new enhanced format.
 	buffer := new(bytes.Buffer)
 	binary.Write(buffer, binary.BigEndian, uint8(1))             // Command
-	binary.Write(buffer, binary.BigEndian, uint32(1))            // Identifier
+	binary.Write(buffer, binary.BigEndian, nextIdentifier)       // Identifier
 	binary.Write(buffer, binary.BigEndian, uint32(0))            // Expiry
 	binary.Write(buffer, binary.BigEndian, uint16(len(token)))   // Device token length
 	binary.Write(buffer, binary.BigEndian, token)                // Token
