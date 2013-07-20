@@ -183,9 +183,6 @@ func (this *Notification) ToBytes() ([]byte, error) {
 	}
 	nextIdentifier++
 
-	fmt.Println("Expiry:", this.Expiry)
-	fmt.Println("Expir2:", uint32(this.Expiry))
-
 	// Create a binary message using the new enhanced format.
 	buffer := new(bytes.Buffer)
 	binary.Write(buffer, binary.BigEndian, uint8(1))             // Command
