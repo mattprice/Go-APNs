@@ -4,6 +4,7 @@ package main
 import (
 	"fmt"
 	"github.com/mattprice/Go-APNs"
+	"time"
 )
 
 func main() {
@@ -11,6 +12,8 @@ func main() {
 	payload := &apns.Notification{
 		Alert: "Hello, World! This is a test.",
 	}
+
+	payload.SetExpiryTime(time.Now().Add(24 * time.Hour))
 
 	bytes, err := payload.ToBytes()
 	if err != nil {

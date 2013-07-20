@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 const (
@@ -32,13 +33,35 @@ type Notification struct {
 	Sound        string
 	LaunchImage  string
 	Custom
+
+	Expiry int64
 }
 
 func NewNotification() *Notification {
-	// If someone is using the `NewNotification()` style, we should pre-make the maps for them.
+	// If someone is using the NewNotification() style, we should pre-make anything we can for them.
 	return &Notification{
 		Custom: Custom{},
 	}
+}
+
+// SetExpiry takes a Unix epoch date in seconds (UTC) that identifies when the notification
+// is no longer valid and can be discarded by the Apple servers if not yet delivered.
+func (this *Notification) SetExpiry(expiry int64) {
+	this.Expiry = expiry
+}
+
+// SetExpiryTime takes a `time.Time` type that identifies when the notification
+// is no longer valid and can be discarded by the Apple servers if not yet delivered.
+func (this *Notification) SetExpiryTime(t time.Time) {
+	this.Expiry = t.Unix()
+}
+
+// SetExpiryDuration takes a `time.Duration` type that identifies when the notification
+// is no longer valid and can be discarded by the Apple servers if not yet delivered.
+// The Duration given will be added to the result of `time.Now()`.
+func (this *Notification) SetExpiryDuration(d time.Duration) {
+	t := time.Now().Add(d)
+	this.Expiry = t.Unix()
 }
 
 func (this *Notification) toPayload() (*map[string]interface{}, error) {
@@ -160,11 +183,14 @@ func (this *Notification) ToBytes() ([]byte, error) {
 	}
 	nextIdentifier++
 
+	fmt.Println("Expiry:", this.Expiry)
+	fmt.Println("Expir2:", uint32(this.Expiry))
+
 	// Create a binary message using the new enhanced format.
 	buffer := new(bytes.Buffer)
 	binary.Write(buffer, binary.BigEndian, uint8(1))             // Command
 	binary.Write(buffer, binary.BigEndian, nextIdentifier)       // Identifier
-	binary.Write(buffer, binary.BigEndian, uint32(0))            // Expiry
+	binary.Write(buffer, binary.BigEndian, uint32(this.Expiry))  // Expiry
 	binary.Write(buffer, binary.BigEndian, uint16(len(token)))   // Device token length
 	binary.Write(buffer, binary.BigEndian, token)                // Token
 	binary.Write(buffer, binary.BigEndian, uint16(len(payload))) // Payload length
