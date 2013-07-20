@@ -1,3 +1,4 @@
+// Package APNs allows you to easily send Apple Push Notifications.
 package apns
 
 import (
