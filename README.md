@@ -3,10 +3,10 @@
 **Work In Progress:** A Golang package for easily connecting and sending notifications to the Apple Push Notification Service. We abstract all the quirks and difficulties of the APNs so that you can focus on your application.
 
 ## Features
-* [Based on queues](http://redth.info/the-problem-with-apples-push-notification-ser/ "The Problem with Apple's Push Notification Service") instead of timeouts. Ensure that all your messages get delivered without sacrificing any speed or worrying about socket disconnections.
-* [Certificates](http://developer.apple.com/library/mac/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/ProvisioningDevelopment.html#//apple_ref/doc/uid/TP40008194-CH104-SW6) can be passed as either a file or a string, allowing you to store the certificates in a database or environmental variable.
-* Completely handles the creation of the [JSON payload](http://developer.apple.com/library/mac/#documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/ApplePushService.html). Stop worrying about how and when to use the alert dictionary format required for complex notifications.
-* Allows you to create a persistent connection to Apple's server, [as recommended](http://developer.apple.com/library/ios/#documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/CommunicatingWIthAPS.html). Perfect for applications that need to continuously send notifications throughtout the day, or for applications that only need to send notifications through in small batches.
+* **Based on a [queue system](http://redth.info/the-problem-with-apples-push-notification-ser/ "The Problem with Apple's Push Notification Service") instead of timeouts.** All your notifications will be delivered without sacrificing speed.
+* **Certificates can be passed as a string or file path.** This allows you to store your certificates anywhere you want—in a database, environmental variable, or on disk.
+* **Simplifies creating the notification payload.** You can start focusing on what you need your notifications to do instead of Apple's API.
+* **Creates a persistent connection to Apple's server.** This is recommended by Apple, and it allows you to send notifications faster by avoiding multiple, costly SSL handshakes.
 
 ## License (MIT)
 Copyright (c) 2013 Matthew Price, http://mattprice.me/
