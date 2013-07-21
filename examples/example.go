@@ -16,7 +16,7 @@ func main() {
 		Alert: "Hello, World! This is a test.",
 	}
 
-	payload.SetExpiryTime(time.Now().Add(24 * time.Hour))
+	payload.SetExpiryDuration(24 * time.Hour)
 
 	output, err := payload.ToBytes()
 	if err != nil {
