@@ -12,52 +12,85 @@ import (
 
 const (
 	// The maximum size allowed for a notification payload is 256 bytes.
-	// Any notification above this limit are refused.
+	// Any notifications larger than this limit are refused by Apple.
 	MAX_PAYLOAD_SIZE = 265
 
-	// The maximum value of the notification identifier we can send.
-	MAX_IDENTIFIER = 9999
+	// The highest notification identifier we can send. Since the identifier can
+	// only be 4 bytes long, this is the maximum value of a 32-bit unsigned integer.
+	MAX_IDENTIFIER = 4294967295
 )
 
 var (
 	nextIdentifier uint32 = 0
 )
 
-type Custom map[string]interface{}
-
 type Notification struct {
-	Alert        string
-	AlertLocKey  string
+	// The text of an alert message to display to the user.
+	// If no `ActionLocKey` is set, a "Close" and "View" button will be displayed.
+	Alert string
+
+	// A key to a string in a `Localizable.strings file` for the current
+	// localization. The string can be formatted with `%@` and `%n$@` specifiers
+	// to take the variables specified in `AlertLocArgs`.
+	AlertLocKey string
+
+	// Variable string values to appear in place of the format specifiers in `AlertLocKey`.
 	AlertLocArgs []string
+
+	// A key to a string for the current localization to use as the right button's
+	// title instead of "View". If the value is `null`, the system displays an alert
+	// with a single "OK" button that simply dismisses the alert when tapped.
 	ActionLocKey string
-	Badge        interface{}
-	Sound        string
-	LaunchImage  string
+
+	// The number to display as the badge of the application icon. If this is not
+	// set, the badge is not changed. To remove the badge, set the value to `0`.
+	Badge interface{}
+
+	// The name of a sound file in the application bundle. The sound in this file
+	// is played as an alert. If the sound file doesn't exist or `default` is
+	// specified as the value, the default alert sound is played.
+	Sound string
+
+	// The filename of an image file in the application bundle. If this is not
+	// set, the system either uses the previous snapshot, uses the image identified
+	// by the `UILaunchImageFile` key in the application's `Info.plist` file,
+	// or falls back to `Default.png`.
+	LaunchImage string
+
+	// A map of custom values used to set context (for the user interface) or internal
+	// metrics. You should not include customer information or any sensitive data.
 	Custom
 
+	// A Unix timestamp identifying when the notification is no longer valid and
+	// can be discarded by the Apple servers if not yet delivered. You can use the
+	// helper functions `SetExpiryTime()` and `SetExpiryDuration()` to aid in conversion.
 	Expiry int64
 }
 
+type Custom map[string]interface{}
+
+// NewNotification creates and returns a new notification with all child maps
+// and structures pre-initialized.
 func NewNotification() *Notification {
-	// If someone is using the NewNotification() style, we should pre-make anything we can for them.
+	// Pre-make any required maps or other structures.
 	return &Notification{
 		Custom: Custom{},
 	}
 }
 
-// SetExpiry takes a Unix epoch date in seconds (UTC) that identifies when the notification
+// SetExpiry accepts a Unix timestamp that identifies when the notification
 // is no longer valid and can be discarded by the Apple servers if not yet delivered.
 func (this *Notification) SetExpiry(expiry int64) {
 	this.Expiry = expiry
 }
 
-// SetExpiryTime takes a `time.Time` type that identifies when the notification
+// SetExpiryTime accepts a `time.Time` that identifies when the notification
 // is no longer valid and can be discarded by the Apple servers if not yet delivered.
 func (this *Notification) SetExpiryTime(t time.Time) {
 	this.Expiry = t.Unix()
 }
 
-// SetExpiryDuration takes a `time.Duration` type that identifies when the notification
+// SetExpiryDuration accepts a `time.Duration` that identifies when the notification
 // is no longer valid and can be discarded by the Apple servers if not yet delivered.
 // The Duration given will be added to the result of `time.Now()`.
 func (this *Notification) SetExpiryDuration(d time.Duration) {
@@ -65,6 +98,7 @@ func (this *Notification) SetExpiryDuration(d time.Duration) {
 	this.Expiry = t.Unix()
 }
 
+// toPayload converts a Notification into a map capable of being marshaled into JSON.
 func (this *Notification) toPayload() (*map[string]interface{}, error) {
 	// I don't like going from Struct to Map to JSON, but this is the best solution
 	// I can come up with right now to continue keeping the API simple and elegant.
@@ -138,6 +172,7 @@ func (this *Notification) toPayload() (*map[string]interface{}, error) {
 	return &payload, nil
 }
 
+// ToJSON generates compact JSON from a notification payload.
 func (this *Notification) ToJSON() ([]byte, error) {
 	payload, err := this.toPayload()
 	if err != nil {
@@ -147,6 +182,7 @@ func (this *Notification) ToJSON() ([]byte, error) {
 	return json.Marshal(payload)
 }
 
+// ToString generates indented, human readable JSON from a notification payload.
 func (this *Notification) ToString() (string, error) {
 	payload, err := this.toPayload()
 	if err != nil {
@@ -157,6 +193,8 @@ func (this *Notification) ToString() (string, error) {
 	return string(bytes), err
 }
 
+// ToBytes converts a JSON payload into a binary format for transmitting to Apple's
+// servers over a socket connection.
 func (this *Notification) ToBytes() ([]byte, error) {
 	// Convert the hex string iOS returns into a device token.
 	// TODO: Move this into a separate `SendTo()` function.
@@ -177,13 +215,6 @@ func (this *Notification) ToBytes() ([]byte, error) {
 		return nil, err
 	}
 
-	// If the next identifier is greater than the max identifier, reset it.
-	// TODO: Because of the queuing system, this could cause problems.
-	if nextIdentifier == MAX_IDENTIFIER {
-		nextIdentifier = 0
-	}
-	nextIdentifier++
-
 	// Create a binary message using the new enhanced format.
 	buffer := new(bytes.Buffer)
 	binary.Write(buffer, binary.BigEndian, uint8(1))             // Command
@@ -193,6 +224,12 @@ func (this *Notification) ToBytes() ([]byte, error) {
 	binary.Write(buffer, binary.BigEndian, token)                // Token
 	binary.Write(buffer, binary.BigEndian, uint16(len(payload))) // Payload length
 	binary.Write(buffer, binary.BigEndian, payload)              // Payload
+
+	// If the next identifier is greater than the max identifier, reset it.
+	if nextIdentifier >= MAX_IDENTIFIER {
+		nextIdentifier = 0
+	}
+	nextIdentifier++
 
 	return buffer.Bytes(), nil
 }
