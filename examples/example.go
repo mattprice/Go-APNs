@@ -11,6 +11,12 @@ import (
 )
 
 func main() {
+	// Attempt connection.
+	err := apns.NewSandboxConnection("certificates/Cert.pem", "certificates/Key.pem")
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
 	// Create a simple notification:
 	payload := &apns.Notification{
 		Alert: "Hello, World! This is a test.",
