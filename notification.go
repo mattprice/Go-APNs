@@ -189,14 +189,7 @@ func (this *Notification) ToString() (string, error) {
 
 // ToBytes converts a JSON payload into a binary format for transmitting to Apple's
 // servers over a socket connection.
-func (this *Notification) ToBytes() ([]byte, error) {
-	// Convert the hex string iOS returns into a device token.
-	// TODO: Move this into a separate `SendTo()` function.
-	token, err := hex.DecodeString("19e5d3a4a27eb08e9b2d22166152a5492fd645868f1e6909e80ba99256c8590f")
-	if err != nil {
-		return nil, err
-	}
-
+func (this *Notification) ToBytes(token []byte) ([]byte, error) {
 	payload, err := this.ToJSON()
 	if err != nil {
 		return nil, err
@@ -226,4 +219,30 @@ func (this *Notification) ToBytes() ([]byte, error) {
 	nextIdentifier++
 
 	return buffer.Bytes(), nil
+}
+
+func (this *Notification) SendTo(token string) error {
+	// Convert the hex string iOS returns into a device token.
+	byteToken, err := hex.DecodeString(token)
+	if err != nil {
+		return err
+	}
+
+	payload, err := this.ToBytes(byteToken)
+	if err != nil {
+		return err
+	}
+
+	_, err = gatewayConnection.Write(payload)
+	if err != nil {
+		return err
+	}
+
+	buffer := make([]byte, 6, 6)
+	_ = gatewayConnection.SetReadDeadline(time.Now().Add(5 * time.Second))
+	gatewayConnection.Read(buffer)
+
+	fmt.Println(buffer)
+
+	return nil
 }

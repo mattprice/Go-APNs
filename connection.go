@@ -6,13 +6,16 @@ import (
 	"strings"
 )
 
-func NewSandboxConnection(cert, key string) (err error) {
-	var connCert tls.Certificate
+var (
+	gatewayConnection *tls.Conn
+	connectionCert    tls.Certificate
+)
 
+func NewSandboxConnection(cert, key string) (err error) {
 	if strings.HasSuffix(cert, ".pem") || strings.HasSuffix(key, ".pem") {
-		connCert, err = tls.LoadX509KeyPair(cert, key)
+		connectionCert, err = tls.LoadX509KeyPair(cert, key)
 	} else {
-		connCert, err = tls.X509KeyPair([]byte(cert), []byte(key))
+		connectionCert, err = tls.X509KeyPair([]byte(cert), []byte(key))
 	}
 
 	if err != nil {
@@ -20,7 +23,7 @@ func NewSandboxConnection(cert, key string) (err error) {
 	}
 
 	conf := &tls.Config{
-		Certificates: []tls.Certificate{connCert},
+		Certificates: []tls.Certificate{connectionCert},
 	}
 
 	conn, err := net.Dial("tcp", "gateway.sandbox.push.apple.com:2195")
@@ -28,8 +31,9 @@ func NewSandboxConnection(cert, key string) (err error) {
 		return err
 	}
 
-	tlsConn := tls.Client(conn, conf)
-	err = tlsConn.Handshake()
+	// TODO: Only one variable for all connections? Doesn't seem smart.
+	gatewayConnection = tls.Client(conn, conf)
+	err = gatewayConnection.Handshake()
 	if err != nil {
 		return err
 	}

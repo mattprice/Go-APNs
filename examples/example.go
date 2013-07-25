@@ -19,12 +19,21 @@ func main() {
 
 	// Create a simple notification:
 	payload := &apns.Notification{
-		Alert: "Hello, World! This is a test.",
+		Alert: "Hello, World! This is test three!",
+	}
+	payload.SetExpiryDuration(24 * time.Hour)
+	payload.SendTo("41e89803e31c5becfe3bdf2a1862cdd4e60112c0740dae61fe9912fc4eb64d43")
+
+	doDebug(payload)
+}
+
+func doDebug(payload *apns.Notification) {
+	byteToken, err := hex.DecodeString("41e89803e31c5becfe3bdf2a1862cdd4e60112c0740dae61fe9912fc4eb64d43")
+	if err != nil {
+		fmt.Println("Error:", err)
 	}
 
-	payload.SetExpiryDuration(24 * time.Hour)
-
-	output, err := payload.ToBytes()
+	output, err := payload.ToBytes(byteToken)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
