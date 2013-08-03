@@ -12,7 +12,7 @@ import (
 
 func main() {
 	// Attempt connection.
-	err := apns.NewSandboxConnection("certificates/Cert.pem", "certificates/Key.pem")
+	err := apns.NewSandboxConnection("certs/Cert.pem", "certs/Key.pem")
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
