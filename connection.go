@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	productionAddress = "gateway.push.apple.com:2195"
-	sandboxAddress    = "gateway.sandbox.push.apple.com:2195"
+	PRODUCTION_GATEWAY = "gateway.push.apple.com:2195"
+	SANDBOX_GATEWAY    = "gateway.sandbox.push.apple.com:2195"
 )
 
 var (
@@ -18,12 +18,12 @@ var (
 )
 
 func NewConnection(cert, key string) error {
-	gatewayAddress = productionAddress
+	gatewayAddress = PRODUCTION_GATEWAY
 	return connection(cert, key)
 }
 
 func NewSandboxConnection(cert, key string) error {
-	gatewayAddress = sandboxAddress
+	gatewayAddress = SANDBOX_GATEWAY
 	return connection(cert, key)
 }
 
