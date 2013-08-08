@@ -233,14 +233,14 @@ func (this *Notification) SendTo(token string) error {
 		return err
 	}
 
-	_, err = gatewayConnection.Write(payload)
+	_, err = sandboxConnection.Write(payload)
 	if err != nil {
 		return err
 	}
 
 	buffer := make([]byte, 6, 6)
-	_ = gatewayConnection.SetReadDeadline(time.Now().Add(5 * time.Second))
-	gatewayConnection.Read(buffer)
+	_ = sandboxConnection.SetReadDeadline(time.Now().Add(5 * time.Second))
+	sandboxConnection.Read(buffer)
 
 	fmt.Println(buffer)
 

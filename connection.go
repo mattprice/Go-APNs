@@ -3,7 +3,6 @@ package apns
 import (
 	"crypto/tls"
 	"net"
-	"strings"
 )
 
 const (
@@ -12,46 +11,56 @@ const (
 )
 
 var (
-	gatewayConnection *tls.Conn
-	gatewayAddress    string
-	connectionCert    tls.Certificate
+	productionConnection *tls.Conn
+	productionConfig     *tls.Config
+
+	sandboxConnection *tls.Conn
+	sandboxConfig     *tls.Config
 )
 
-func NewConnection(cert, key string) error {
-	gatewayAddress = PRODUCTION_GATEWAY
-	return connection(cert, key)
-}
-
-func NewSandboxConnection(cert, key string) error {
-	gatewayAddress = SANDBOX_GATEWAY
-	return connection(cert, key)
-}
-
-func connection(cert, key string) (err error) {
-	if strings.HasSuffix(cert, ".pem") || strings.HasSuffix(key, ".pem") {
-		// Load the certificate from files.
-		connectionCert, err = tls.LoadX509KeyPair(cert, key)
-	} else {
-		// Load the certificate from input strings.
-		connectionCert, err = tls.X509KeyPair([]byte(cert), []byte(key))
-	}
+func LoadCertificates(cert, key string) error {
+	keyPair, err := tls.LoadX509KeyPair(cert, key)
 	if err != nil {
 		return err
 	}
 
-	conf := &tls.Config{
-		Certificates: []tls.Certificate{connectionCert},
+	productionConfig = &tls.Config{
+		Certificates: []tls.Certificate{keyPair},
 	}
 
-	conn, err := net.Dial("tcp", gatewayAddress)
+	if err := sandboxConnect(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func LoadSandboxCertificates(cert, key string) error {
+	keyPair, err := tls.LoadX509KeyPair(cert, key)
 	if err != nil {
 		return err
 	}
 
-	// TODO: Connection information probably needs to be handled better to support
-	// creating production and sandbox connections at the same time.
-	gatewayConnection = tls.Client(conn, conf)
-	err = gatewayConnection.Handshake()
+	sandboxConfig = &tls.Config{
+		Certificates: []tls.Certificate{keyPair},
+	}
+
+	if err := sandboxConnect(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func sandboxConnect() error {
+	conn, err := net.Dial("tcp", SANDBOX_GATEWAY)
+	if err != nil {
+		return err
+	}
+
+	// TODO: Don't hardcode this as a sandbox connection.
+	sandboxConnection = tls.Client(conn, sandboxConfig)
+	err = sandboxConnection.Handshake()
 	if err != nil {
 		return err
 	}
