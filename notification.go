@@ -52,13 +52,13 @@ type Notification struct {
 	// the application's `Info.plist` file, or the `Default.png`.
 	LaunchImage string
 
-	// Custom values your app can use to set context for the user interface.
-	// You should not include customer information or any sensitive data.
-	Custom
-
 	// A Unix timestamp identifying when the notification is no longer valid and
 	// can be discarded by the Apple servers if not yet delivered.
 	Expiry int64
+
+	// Custom values your app can use to set context for the user interface.
+	// You should not include customer information or any sensitive data.
+	Custom
 }
 
 type Custom map[string]interface{}
@@ -233,16 +233,62 @@ func (this *Notification) SendTo(token string) error {
 		return err
 	}
 
-	_, err = sandboxConnection.Write(payload)
+	_, err = sandboxClient.Write(payload)
 	if err != nil {
 		return err
 	}
 
+	// Check for and read errors.
 	buffer := make([]byte, 6, 6)
-	_ = sandboxConnection.SetReadDeadline(time.Now().Add(5 * time.Second))
-	sandboxConnection.Read(buffer)
-
+	_ = sandboxClient.SetReadDeadline(time.Now().Add(5 * time.Second))
+	sandboxClient.Read(buffer)
 	fmt.Println(buffer)
+
+	return nil
+}
+
+// DebugBinary outputs each portion of the binary enhanced format for manual verification.
+func (this *Notification) DebugBinary(token string) error {
+	// TODO: This duplicates some of the SendTo function. Not sure what we want to do about that.
+
+	byteToken, err := hex.DecodeString(token)
+	if err != nil {
+		return err
+	}
+
+	output, err := this.ToBytes(byteToken)
+	if err != nil {
+		return err
+	}
+
+	// Convert the Expiry to a string.
+	var expiry uint32
+	buffer := bytes.NewBuffer(output[5:9])
+	binary.Read(buffer, binary.BigEndian, &expiry)
+
+	// Convert the Identifier to a string.
+	var identifier uint32
+	buffer = bytes.NewBuffer(output[1:5])
+	binary.Read(buffer, binary.BigEndian, &identifier)
+
+	// Convert the Token Length to a string.
+	var tokenLength uint32
+	buffer = bytes.NewBuffer(output[9:11])
+	binary.Read(buffer, binary.BigEndian, &tokenLength)
+
+	// Convert the Token Length to a string.
+	var payloadLength uint32
+	buffer = bytes.NewBuffer(output[43:45])
+	binary.Read(buffer, binary.BigEndian, &payloadLength)
+
+	fmt.Println("Binary Output:")
+	fmt.Println("- Command:\t", output[0])
+	fmt.Println("- Identifier:\t", identifier)
+	fmt.Println("- Expiry:\t", expiry)
+	fmt.Println("- Token Len:\t", tokenLength)
+	fmt.Println("- Token:\t", hex.EncodeToString(output[11:43]))
+	fmt.Println("- Paylod Len:\t", payloadLength)
+	fmt.Println("- Payload:\t", string(output[45:]))
 
 	return nil
 }

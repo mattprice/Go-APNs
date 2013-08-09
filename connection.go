@@ -11,11 +11,11 @@ const (
 )
 
 var (
-	productionConnection *tls.Conn
-	productionConfig     *tls.Config
+	productionClient *tls.Conn
+	productionConfig *tls.Config
 
-	sandboxConnection *tls.Conn
-	sandboxConfig     *tls.Config
+	sandboxClient *tls.Conn
+	sandboxConfig *tls.Config
 )
 
 func LoadCertificates(cert, key string) error {
@@ -59,8 +59,8 @@ func sandboxConnect() error {
 	}
 
 	// TODO: Don't hardcode this as a sandbox connection.
-	sandboxConnection = tls.Client(conn, sandboxConfig)
-	err = sandboxConnection.Handshake()
+	sandboxClient = tls.Client(conn, sandboxConfig)
+	err = sandboxClient.Handshake()
 	if err != nil {
 		return err
 	}
