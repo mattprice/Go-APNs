@@ -16,7 +16,8 @@ func main() {
 
 	// Create a simple notification:
 	payload := &apns.Notification{
-		Alert: "Hello, World! This is a test!",
+		Alert:   "Hello, World! This is a test!",
+		Sandbox: true,
 	}
 	payload.SetExpiryDuration(24 * time.Hour)
 	payload.DebugBinary("41e89803e31c5becfe3bdf2a1862cdd4e60112c0740dae61fe9912fc4eb64d43")

@@ -11,12 +11,16 @@ const (
 )
 
 var (
-	productionClient *tls.Conn
-	productionConfig *tls.Config
-
-	sandboxClient *tls.Conn
-	sandboxConfig *tls.Config
+	productionConnection *gatewayConnection
+	productionConfig     *tls.Config
+	sandboxConnection    *gatewayConnection
+	sandboxConfig        *tls.Config
 )
+
+type gatewayConnection struct {
+	client  *tls.Conn
+	sandbox bool
+}
 
 func LoadCertificates(cert, key string) error {
 	keyPair, err := tls.LoadX509KeyPair(cert, key)
@@ -28,7 +32,8 @@ func LoadCertificates(cert, key string) error {
 		Certificates: []tls.Certificate{keyPair},
 	}
 
-	if err := sandboxConnect(); err != nil {
+	productionConnection = &gatewayConnection{sandbox: false}
+	if err := productionConnection.connect(); err != nil {
 		return err
 	}
 
@@ -45,22 +50,33 @@ func LoadSandboxCertificates(cert, key string) error {
 		Certificates: []tls.Certificate{keyPair},
 	}
 
-	if err := sandboxConnect(); err != nil {
+	sandboxConnection = &gatewayConnection{sandbox: true}
+	if err := sandboxConnection.connect(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func sandboxConnect() error {
-	conn, err := net.Dial("tcp", SANDBOX_GATEWAY)
+func (this *gatewayConnection) connect() error {
+	var gateway string
+	var config *tls.Config
+
+	if this.sandbox {
+		gateway = SANDBOX_GATEWAY
+		config = sandboxConfig
+	} else {
+		gateway = PRODUCTION_GATEWAY
+		config = productionConfig
+	}
+
+	conn, err := net.Dial("tcp", gateway)
 	if err != nil {
 		return err
 	}
 
-	// TODO: Don't hardcode this as a sandbox connection.
-	sandboxClient = tls.Client(conn, sandboxConfig)
-	err = sandboxClient.Handshake()
+	this.client = tls.Client(conn, config)
+	err = this.client.Handshake()
 	if err != nil {
 		return err
 	}

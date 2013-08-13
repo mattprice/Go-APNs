@@ -3,6 +3,7 @@ package apns
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
@@ -55,6 +56,10 @@ type Notification struct {
 	// A Unix timestamp identifying when the notification is no longer valid and
 	// can be discarded by the Apple servers if not yet delivered.
 	Expiry int64
+
+	// Sets whether this should be sent via a sandbox connection or a production connection.
+	// If you have not loaded the appropriate certificates, this will fail.
+	Sandbox bool
 
 	// Custom values your app can use to set context for the user interface.
 	// You should not include customer information or any sensitive data.
@@ -233,15 +238,22 @@ func (this *Notification) SendTo(token string) error {
 		return err
 	}
 
-	_, err = sandboxClient.Write(payload)
+	var client *tls.Conn
+	if this.Sandbox {
+		client = sandboxConnection.client
+	} else {
+		client = productionConnection.client
+	}
+
+	_, err = client.Write(payload)
 	if err != nil {
 		return err
 	}
 
 	// Check for and read errors.
 	buffer := make([]byte, 6, 6)
-	_ = sandboxClient.SetReadDeadline(time.Now().Add(5 * time.Second))
-	sandboxClient.Read(buffer)
+	_ = client.SetReadDeadline(time.Now().Add(5 * time.Second))
+	client.Read(buffer)
 	fmt.Println(buffer)
 
 	return nil
