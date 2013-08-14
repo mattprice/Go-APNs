@@ -3,7 +3,6 @@ package apns
 
 import (
 	"bytes"
-	"crypto/tls"
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
@@ -238,23 +237,21 @@ func (this *Notification) SendTo(token string) error {
 		return err
 	}
 
-	var client *tls.Conn
 	if this.Sandbox {
-		client = sandboxConnection.client
+		_, err = sandboxConnection.Write(payload)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(sandboxConnection.ReadErrors())
 	} else {
-		client = productionConnection.client
-	}
+		_, err = productionConnection.Write(payload)
+		if err != nil {
+			return err
+		}
 
-	_, err = client.Write(payload)
-	if err != nil {
-		return err
+		fmt.Println(productionConnection.ReadErrors())
 	}
-
-	// Check for and read errors.
-	buffer := make([]byte, 6, 6)
-	_ = client.SetReadDeadline(time.Now().Add(5 * time.Second))
-	client.Read(buffer)
-	fmt.Println(buffer)
 
 	return nil
 }

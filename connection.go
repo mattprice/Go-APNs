@@ -3,6 +3,7 @@ package apns
 import (
 	"crypto/tls"
 	"net"
+	"time"
 )
 
 const (
@@ -19,7 +20,8 @@ var (
 
 type gatewayConnection struct {
 	client  *tls.Conn
-	sandbox bool
+	config  *tls.Config
+	gateway string
 }
 
 func LoadCertificates(cert, key string) error {
@@ -32,7 +34,10 @@ func LoadCertificates(cert, key string) error {
 		Certificates: []tls.Certificate{keyPair},
 	}
 
-	productionConnection = &gatewayConnection{sandbox: false}
+	productionConnection = &gatewayConnection{
+		gateway: PRODUCTION_GATEWAY,
+		config:  productionConfig,
+	}
 	if err := productionConnection.connect(); err != nil {
 		return err
 	}
@@ -50,7 +55,10 @@ func LoadSandboxCertificates(cert, key string) error {
 		Certificates: []tls.Certificate{keyPair},
 	}
 
-	sandboxConnection = &gatewayConnection{sandbox: true}
+	sandboxConnection = &gatewayConnection{
+		gateway: SANDBOX_GATEWAY,
+		config:  sandboxConfig,
+	}
 	if err := sandboxConnection.connect(); err != nil {
 		return err
 	}
@@ -59,27 +67,29 @@ func LoadSandboxCertificates(cert, key string) error {
 }
 
 func (this *gatewayConnection) connect() error {
-	var gateway string
-	var config *tls.Config
-
-	if this.sandbox {
-		gateway = SANDBOX_GATEWAY
-		config = sandboxConfig
-	} else {
-		gateway = PRODUCTION_GATEWAY
-		config = productionConfig
-	}
-
-	conn, err := net.Dial("tcp", gateway)
+	conn, err := net.Dial("tcp", this.gateway)
 	if err != nil {
 		return err
 	}
 
-	this.client = tls.Client(conn, config)
+	this.client = tls.Client(conn, this.config)
 	err = this.client.Handshake()
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (this *gatewayConnection) Write(payload []byte) (int, error) {
+	return this.client.Write(payload)
+}
+
+func (this *gatewayConnection) ReadErrors() []byte {
+	_ = this.client.SetReadDeadline(time.Now().Add(5 * time.Second))
+
+	buffer := make([]byte, 6, 6)
+	this.client.Read(buffer)
+
+	return buffer
 }
