@@ -270,23 +270,23 @@ func (this *Notification) DebugBinary(token string) error {
 		return err
 	}
 
-	// Convert the Expiry to a string.
-	var expiry uint32
-	buffer := bytes.NewBuffer(output[5:9])
-	binary.Read(buffer, binary.BigEndian, &expiry)
-
 	// Convert the Identifier to a string.
 	var identifier uint32
-	buffer = bytes.NewBuffer(output[1:5])
+	buffer := bytes.NewBuffer(output[1:5])
 	binary.Read(buffer, binary.BigEndian, &identifier)
 
+	// Convert the Expiry to a string.
+	var expiry uint32
+	buffer = bytes.NewBuffer(output[5:9])
+	binary.Read(buffer, binary.BigEndian, &expiry)
+
 	// Convert the Token Length to a string.
-	var tokenLength uint32
+	var tokenLength uint16
 	buffer = bytes.NewBuffer(output[9:11])
 	binary.Read(buffer, binary.BigEndian, &tokenLength)
 
 	// Convert the Token Length to a string.
-	var payloadLength uint32
+	var payloadLength uint16
 	buffer = bytes.NewBuffer(output[43:45])
 	binary.Read(buffer, binary.BigEndian, &payloadLength)
 
