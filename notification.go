@@ -191,9 +191,9 @@ func (this *Notification) ToString() (string, error) {
 	return string(bytes), err
 }
 
-// ToBytes converts a JSON payload into a binary format for transmitting to Apple's
+// ToBinary converts a JSON payload into a binary format for transmitting to Apple's
 // servers over a socket connection.
-func (this *Notification) ToBytes(token []byte) ([]byte, error) {
+func (this *Notification) ToBinary(token []byte) ([]byte, error) {
 	payload, err := this.ToJSON()
 	if err != nil {
 		return nil, err
@@ -232,20 +232,21 @@ func (this *Notification) SendTo(token string) error {
 		return err
 	}
 
-	payload, err := this.ToBytes(byteToken)
+	// Converts this notification into the Enhanced Bbinary Format.
+	message, err := this.ToBinary(byteToken)
 	if err != nil {
 		return err
 	}
 
 	if this.Sandbox {
-		_, err = sandboxConnection.Write(payload)
+		_, err = sandboxConnection.Write(message)
 		if err != nil {
 			return err
 		}
 
 		fmt.Println(sandboxConnection.ReadErrors())
 	} else {
-		_, err = productionConnection.Write(payload)
+		_, err = productionConnection.Write(message)
 		if err != nil {
 			return err
 		}
@@ -258,46 +259,46 @@ func (this *Notification) SendTo(token string) error {
 
 // DebugBinary outputs each portion of the binary enhanced format for manual verification.
 func (this *Notification) DebugBinary(token string) error {
-	// TODO: This duplicates some of the SendTo function. Not sure what we want to do about that.
-
+	// Convert the hex string iOS returns into a device token.
 	byteToken, err := hex.DecodeString(token)
 	if err != nil {
 		return err
 	}
 
-	output, err := this.ToBytes(byteToken)
+	// Converts this notification into the Enhanced Bbinary Format.
+	message, err := this.ToBinary(byteToken)
 	if err != nil {
 		return err
 	}
 
 	// Convert the Identifier to a string.
 	var identifier uint32
-	buffer := bytes.NewBuffer(output[1:5])
+	buffer := bytes.NewBuffer(message[1:5])
 	binary.Read(buffer, binary.BigEndian, &identifier)
 
 	// Convert the Expiry to a string.
 	var expiry uint32
-	buffer = bytes.NewBuffer(output[5:9])
+	buffer = bytes.NewBuffer(message[5:9])
 	binary.Read(buffer, binary.BigEndian, &expiry)
 
 	// Convert the Token Length to a string.
 	var tokenLength uint16
-	buffer = bytes.NewBuffer(output[9:11])
+	buffer = bytes.NewBuffer(message[9:11])
 	binary.Read(buffer, binary.BigEndian, &tokenLength)
 
 	// Convert the Token Length to a string.
 	var payloadLength uint16
-	buffer = bytes.NewBuffer(output[43:45])
+	buffer = bytes.NewBuffer(message[43:45])
 	binary.Read(buffer, binary.BigEndian, &payloadLength)
 
 	fmt.Println("Binary Output:")
-	fmt.Println("- Command:\t", output[0])
+	fmt.Println("- Command:\t", message[0])
 	fmt.Println("- Identifier:\t", identifier)
 	fmt.Println("- Expiry:\t", expiry)
 	fmt.Println("- Token Len:\t", tokenLength)
-	fmt.Println("- Token:\t", hex.EncodeToString(output[11:43]))
+	fmt.Println("- Token:\t", hex.EncodeToString(message[11:43]))
 	fmt.Println("- Paylod Len:\t", payloadLength)
-	fmt.Println("- Payload:\t", string(output[45:]))
+	fmt.Println("- Payload:\t", string(message[45:]))
 
 	return nil
 }
