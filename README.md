@@ -1,14 +1,16 @@
-# Go APNs [![Build Status](https://travis-ci.org/mattprice/Go-APNs.png)](https://travis-ci.org/mattprice/Go-APNs)
+# Go APNs
 
-## This is a major Work In Progress with an API that will be changing. Although it does work, it should not be used for production yet.
+[![Build Status](https://travis-ci.org/mattprice/Go-APNs.png)](https://travis-ci.org/mattprice/Go-APNs)
+
+#### NOTICE: This is a major work in progress. The API will be changing, and I have not finished implementing all the features. I do not recommend using this for production yet.
 
 A Golang package for easily connecting and sending notifications to the Apple Push Notification Service. We abstract all the quirks and difficulties of the APNs so that you can focus on your application.
 
 ## Features
-* **Based on a [queue system](http://redth.info/the-problem-with-apples-push-notification-ser/ "The Problem with Apple's Push Notification Service") instead of timeouts.** All your notifications will be delivered without sacrificing speed.
-* **Certificates can be passed as a string or file path.** This allows you to store your certificates anywhere you want—in a database, environmental variable, or on disk.
+* **Uses a [queue system](http://redth.info/the-problem-with-apples-push-notification-ser/ "The Problem with Apple's Push Notification Service") instead of timeouts.** Your notifications are delivered without sacrificing any speed.
+* **Accepts certificates from a string or file path.** This allows you to store your certificates anywhere you want—in a database, environmental variable, or on disk.
 * **Simplifies creating the notification payload.** You can start focusing on what you need your notifications to do instead of Apple's API.
-* **Creates a persistent connection to Apple's server.** This is recommended by Apple, and it allows you to send notifications faster by avoiding multiple, costly SSL handshakes.
+* **Creates a persistent connection to Apple's server.** Recommended by Apple. This allows you to send notifications faster by avoiding multiple costly SSL handshakes.
 
 ## License (MIT)
 Copyright (c) 2013 Matthew Price, http://mattprice.me/
