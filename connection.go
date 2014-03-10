@@ -24,43 +24,61 @@ type gatewayConnection struct {
 	gateway string
 }
 
-func LoadCertificates(cert, key string) error {
-	keyPair, err := tls.LoadX509KeyPair(cert, key)
+func LoadCertificate(production bool, certContents []byte) error {
+	keyPair, err := tls.X509KeyPair(certContents, certContents)
 	if err != nil {
 		return err
 	}
 
-	productionConfig = &tls.Config{
-		Certificates: []tls.Certificate{keyPair},
-	}
-
-	productionConnection = &gatewayConnection{
-		gateway: PRODUCTION_GATEWAY,
-		config:  productionConfig,
-	}
-	if err := productionConnection.connect(); err != nil {
+	if err := storeAndConnect(production, keyPair); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func LoadSandboxCertificates(cert, key string) error {
-	keyPair, err := tls.LoadX509KeyPair(cert, key)
+func LoadCertificateFile(production bool, certLocation string) error {
+	keyPair, err := tls.LoadX509KeyPair(certLocation, certLocation)
 	if err != nil {
 		return err
 	}
 
-	sandboxConfig = &tls.Config{
-		Certificates: []tls.Certificate{keyPair},
+	if err := storeAndConnect(production, keyPair); err != nil {
+		return err
 	}
 
-	sandboxConnection = &gatewayConnection{
-		gateway: SANDBOX_GATEWAY,
-		config:  sandboxConfig,
-	}
-	if err := sandboxConnection.connect(); err != nil {
-		return err
+	return nil
+}
+
+func storeAndConnect(production bool, keyPair tls.Certificate) error {
+	if production {
+		// Production Connections
+		productionConfig = &tls.Config{
+			Certificates: []tls.Certificate{keyPair},
+		}
+
+		productionConnection = &gatewayConnection{
+			gateway: PRODUCTION_GATEWAY,
+			config:  productionConfig,
+		}
+
+		if err := productionConnection.connect(); err != nil {
+			return err
+		}
+	} else {
+		// Sandbox Connections
+		sandboxConfig = &tls.Config{
+			Certificates: []tls.Certificate{keyPair},
+		}
+
+		sandboxConnection = &gatewayConnection{
+			gateway: SANDBOX_GATEWAY,
+			config:  sandboxConfig,
+		}
+
+		if err := sandboxConnection.connect(); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -85,11 +103,16 @@ func (this *gatewayConnection) Write(payload []byte) (int, error) {
 	return this.client.Write(payload)
 }
 
-func (this *gatewayConnection) ReadErrors() []byte {
+func (this *gatewayConnection) ReadErrors() (bool, []byte) {
 	_ = this.client.SetReadDeadline(time.Now().Add(5 * time.Second))
 
 	buffer := make([]byte, 6, 6)
-	this.client.Read(buffer)
+	n, _ := this.client.Read(buffer)
 
-	return buffer
+	// n == 0 if there were no errors.
+	if n == 0 {
+		return false, nil
+	}
+
+	return true, buffer
 }

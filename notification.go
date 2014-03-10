@@ -97,6 +97,7 @@ func (this *Notification) SetExpiryDuration(d time.Duration) {
 }
 
 // toPayload converts a Notification into a map capable of being marshaled into JSON.
+// TODO: Maybe this should be renamed? It actually converts to a map.
 func (this *Notification) toPayload() (*map[string]interface{}, error) {
 	// I don't like going from Struct to Map to JSON, but this is the best solution
 	// I can come up with right now to continue keeping the API simple and elegant.
@@ -244,14 +245,18 @@ func (this *Notification) SendTo(token string) error {
 			return err
 		}
 
-		fmt.Println(sandboxConnection.ReadErrors())
+		if hadErrors, errPayload := sandboxConnection.ReadErrors(); hadErrors == true {
+			fmt.Println(errPayload)
+		}
 	} else {
 		_, err = productionConnection.Write(message)
 		if err != nil {
 			return err
 		}
 
-		fmt.Println(productionConnection.ReadErrors())
+		if hadErrors, errPayload := productionConnection.ReadErrors(); hadErrors == true {
+			fmt.Println(errPayload)
+		}
 	}
 
 	return nil
