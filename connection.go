@@ -99,8 +99,21 @@ func (this *gatewayConnection) connect() error {
 	return nil
 }
 
-func (this *gatewayConnection) Write(payload []byte) (int, error) {
-	return this.client.Write(payload)
+func (this *gatewayConnection) Write(payload []byte) error {
+	_, err := this.client.Write(payload)
+	if err != nil {
+		// We probably disconnected. Reconnect and resend the message.
+		// TODO: Might want to check the actual error returned?
+		err := this.connect()
+		if err != nil {
+			return err
+		}
+
+		// TODO: This could cause an endless loop of errors.
+		this.Write(payload)
+	}
+
+	return nil
 }
 
 func (this *gatewayConnection) ReadErrors() (bool, []byte) {

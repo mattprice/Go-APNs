@@ -233,14 +233,14 @@ func (this *Notification) SendTo(token string) error {
 		return err
 	}
 
-	// Converts this notification into the Enhanced Bbinary Format.
+	// Converts this notification into the Enhanced Binary Format.
 	message, err := this.ToBinary(byteToken)
 	if err != nil {
 		return err
 	}
 
 	if this.Sandbox {
-		_, err = sandboxConnection.Write(message)
+		err = sandboxConnection.Write(message)
 		if err != nil {
 			return err
 		}
@@ -249,7 +249,7 @@ func (this *Notification) SendTo(token string) error {
 			fmt.Println(errPayload)
 		}
 	} else {
-		_, err = productionConnection.Write(message)
+		err = productionConnection.Write(message)
 		if err != nil {
 			return err
 		}
