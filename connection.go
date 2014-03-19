@@ -2,6 +2,7 @@ package apns
 
 import (
 	"crypto/tls"
+	"log"
 	"net"
 	"time"
 )
@@ -22,6 +23,11 @@ type gatewayConnection struct {
 	client  *tls.Conn
 	config  *tls.Config
 	gateway string
+}
+
+func init() {
+	// TODO: Wrap log.Print calls so we can easily disable them.
+	log.SetPrefix("[APNS] ")
 }
 
 func LoadCertificate(production bool, certContents []byte) error {
@@ -104,12 +110,18 @@ func (this *gatewayConnection) Write(payload []byte) error {
 	if err != nil {
 		// We probably disconnected. Reconnect and resend the message.
 		// TODO: Might want to check the actual error returned?
+		log.Printf("Error writing data to socket: %v", err)
+		log.Println("*** Server disconnected unexpectedly. ***")
 		err := this.connect()
 		if err != nil {
+			log.Printf("Could not reconnect to the server: %v", err)
 			return err
 		}
+		log.Println("Reconnected to the server successfully.")
 
 		// TODO: This could cause an endless loop of errors.
+		// 		If it's the connection failing, that would be caught above.
+		// 		So why don't we add a counter to the payload itself?
 		this.Write(payload)
 	}
 
@@ -124,6 +136,7 @@ func (this *gatewayConnection) ReadErrors() (bool, []byte) {
 
 	// n == 0 if there were no errors.
 	if n == 0 {
+		// TODO: I think this would get returned even if Read() produces an error.
 		return false, nil
 	}
 
