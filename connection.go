@@ -25,10 +25,7 @@ type gatewayConnection struct {
 	gateway string
 }
 
-func init() {
-	// TODO: Wrap log.Print calls so we can easily disable them.
-	log.SetPrefix("[APNS] ")
-}
+// TODO: Wrap log.Print calls so we can easily disable them.
 
 func LoadCertificate(production bool, certContents []byte) error {
 	keyPair, err := tls.X509KeyPair(certContents, certContents)
@@ -110,14 +107,14 @@ func (this *gatewayConnection) Write(payload []byte) error {
 	if err != nil {
 		// We probably disconnected. Reconnect and resend the message.
 		// TODO: Might want to check the actual error returned?
-		log.Printf("Error writing data to socket: %v", err)
-		log.Println("*** Server disconnected unexpectedly. ***")
+		log.Printf("[APNS] Error writing data to socket: %v", err)
+		log.Println("[APNS] *** Server disconnected unexpectedly. ***")
 		err := this.connect()
 		if err != nil {
-			log.Printf("Could not reconnect to the server: %v", err)
+			log.Printf("[APNS] Could not reconnect to the server: %v", err)
 			return err
 		}
-		log.Println("Reconnected to the server successfully.")
+		log.Println("[APNS] Reconnected to the server successfully.")
 
 		// TODO: This could cause an endless loop of errors.
 		// 		If it's the connection failing, that would be caught above.
