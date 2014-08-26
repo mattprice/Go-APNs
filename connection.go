@@ -2,14 +2,19 @@ package apns
 
 import (
 	"crypto/tls"
+    "fmt"
 	"log"
 	"net"
 	"time"
 )
 
 const (
-	PRODUCTION_GATEWAY = "gateway.push.apple.com:2195"
-	SANDBOX_GATEWAY    = "gateway.sandbox.push.apple.com:2195"
+	PRODUCTION_GATEWAY = "gateway.push.apple.com"
+	SANDBOX_GATEWAY    = "gateway.sandbox.push.apple.com"
+)
+
+const (
+    GATEWAY_PORT = 2195
 )
 
 var (
@@ -58,10 +63,11 @@ func storeAndConnect(production bool, keyPair tls.Certificate) error {
 		// Production Connections
 		productionConfig = &tls.Config{
 			Certificates: []tls.Certificate{keyPair},
+			ServerName: PRODUCTION_GATEWAY,
 		}
 
 		productionConnection = &gatewayConnection{
-			gateway: PRODUCTION_GATEWAY,
+			gateway: fmt.Sprintf("%v:%v",PRODUCTION_GATEWAY, GATEWAY_PORT),
 			config:  productionConfig,
 		}
 
@@ -72,10 +78,11 @@ func storeAndConnect(production bool, keyPair tls.Certificate) error {
 		// Sandbox Connections
 		sandboxConfig = &tls.Config{
 			Certificates: []tls.Certificate{keyPair},
+			ServerName: SANDBOX_GATEWAY,
 		}
 
 		sandboxConnection = &gatewayConnection{
-			gateway: SANDBOX_GATEWAY,
+			gateway: fmt.Sprintf("%v:%v",SANDBOX_GATEWAY, GATEWAY_PORT),
 			config:  sandboxConfig,
 		}
 
