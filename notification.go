@@ -59,6 +59,9 @@ type Notification struct {
 	// Sets whether this should be sent via a sandbox connection or a production connection.
 	// If you have not loaded the appropriate certificates, this will fail.
 	Sandbox bool
+    
+	// Indicates new content is available for Newstand and background content downloads
+	ContentAvailable bool
 
 	// Custom values your app can use to set context for the user interface.
 	// You should not include customer information or any sensitive data.
@@ -159,7 +162,11 @@ func (this *Notification) toPayload() (*map[string]interface{}, error) {
 	if this.Sound != "" {
 		aps["sound"] = this.Sound
 	}
-
+    
+	if this.ContentAvailable {
+		aps["content-available"] = 1
+	}
+    
 	// All standard dictionaries need to be wrapped in the "aps" namespace.
 	payload["aps"] = &aps
 
